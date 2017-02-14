@@ -9,9 +9,28 @@ import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
 public class CustomMailAppender extends AppenderSkeleton {
+    private String addressFrom = "";
+    private String addressTo = "";
     private String username = "";
     private String password = "";
     private String smtp = "";
+    private String smtpPort = "";
+
+    public String getAddressFrom() {
+        return addressFrom;
+    }
+
+    public void setAddressFrom(String addressFrom) {
+        this.addressFrom = addressFrom;
+    }
+
+    public String getAddressTo() {
+        return addressTo;
+    }
+
+    public void setAddressTo(String addressTo) {
+        this.addressTo = addressTo;
+    }
 
     public String getSmtpPort() {
         return smtpPort;
@@ -20,8 +39,6 @@ public class CustomMailAppender extends AppenderSkeleton {
     public void setSmtpPort(String smtpPort) {
         this.smtpPort = smtpPort;
     }
-
-    private String smtpPort = "";
 
     public String getSmtp() {
         return smtp;
@@ -49,8 +66,14 @@ public class CustomMailAppender extends AppenderSkeleton {
 
     @Override
     protected void append(LoggingEvent event) {
-        String subj = "CARSHOP:" + event.getLevel();
+        String subj;
         String body = layout.format(event);
+
+        if (layout instanceof SubjectLayoutable) {
+            subj = ((SubjectLayoutable) layout).formatSubject(event);
+        } else {
+            subj = "CARSHOP:" + event.getLevel();
+        }
 
         sendMail(subj, body);
     }
@@ -71,9 +94,9 @@ public class CustomMailAppender extends AppenderSkeleton {
 
         try {
             Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress("lab.car.shop.logger@gmail.com"));
+            message.setFrom(new InternetAddress(addressFrom));
             message.setRecipients(Message.RecipientType.TO,
-                    InternetAddress.parse("example@gmail.com"));
+                    InternetAddress.parse(addressTo));
             message.setSubject(subj);
             message.setText(body);
             Transport.send(message);

@@ -19,7 +19,11 @@
         <param name="password" value=""/>
         <param name="smtp" value=""/>
         <param name="smtpPort" value=""/>
+        <param name="addressFrom" value=""/>
+        <param name="addressTo" value=""/>
         <layout class="logging.CustomLogLayout">
+            <param name="ConversionPattern" value="%-7p %d [%t] %c %x - %m%n"/>
+            <param name="subjectPattern" value="%p - %m"/>
         </layout>
     </appender>
 

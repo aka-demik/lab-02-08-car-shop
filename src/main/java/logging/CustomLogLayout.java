@@ -1,21 +1,36 @@
 package logging;
 
 import org.apache.log4j.PatternLayout;
+import org.apache.log4j.helpers.PatternConverter;
 import org.apache.log4j.spi.LoggingEvent;
 
-public class CustomLogLayout extends PatternLayout {
-    @Override
-    public String format(LoggingEvent event) {
-        Object obj = event.getMessage();
+public class CustomLogLayout extends PatternLayout implements SubjectLayoutable {
+    private String subjectPattern = "%m%n";
+    private PatternConverter topic = this.createPatternParser(subjectPattern).parse();
+    private StringBuffer sbuf = new StringBuffer(256);
 
-        StringBuffer sb = new StringBuffer();
+    public String formatSubject(LoggingEvent event) {
+        if(sbuf.capacity() > MAX_CAPACITY) {
+            sbuf = new StringBuffer(BUF_SIZE);
+        } else {
+            sbuf.setLength(0);
+        }
 
-        sb.append(event.getLevel());
-        sb.append(" - ");
-        sb.append(event.getTimeStamp());
-        sb.append(" - ");
-        sb.append(obj.toString());
+        PatternConverter c = topic;
 
-        return sb.toString();
+        while(c != null) {
+            c.format(sbuf, event);
+            c = c.next;
+        }
+        return sbuf.toString();
+    }
+
+    public String getSubjectPattern() {
+        return this.subjectPattern;
+    }
+
+    public void setSubjectPattern(String subjectPattern) {
+        this.subjectPattern = subjectPattern;
+        this.topic = this.createPatternParser(subjectPattern).parse();
     }
 }
